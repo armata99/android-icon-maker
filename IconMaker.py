@@ -30,27 +30,25 @@ def makeIcons(image, icon_type=ic_launcher_sizes, add_background=False):
             resized_image = image.copy()
             resized_image.thumbnail(size["values"])
 
+            os.makedirs(size["dirName"], exist_ok=True)
+
             if add_background:
-                background_color = (255, 255, 255)
-                if iconName.endswith('round'):
-                    background_radius = 10
-                    rounded_image = Image.new('RGBA', size["values"], background_color)
+    
+                background_image = Image.new('RGB', size["values"], (255, 255, 255))
+                background_image.paste(resized_image, resized_image)
+                resized_image = background_image
+
+                if icon_type == 'launcher':
+                    background_radius = 45
+                    rounded_image = Image.new('RGBA', size["values"], (0, 0, 0, 0))
                     mask = Image.new('L', size["values"], 0)
                     draw = ImageDraw.Draw(mask)
                     draw.rounded_rectangle((0, 0, size["values"][0], size["values"][1]), background_radius, fill=255)
                     rounded_image.paste(resized_image, mask=mask)
-                    resized_image = rounded_image
-                else:
-                    background_image = Image.new('RGB', size["values"], background_color)
-                    background_image.paste(resized_image, ((size["values"][0] - resized_image.width) // 2, (size["values"][1] - resized_image.height) // 2))
-                    resized_image = background_image
+                    rounded_image.save(os.path.join(size["dirName"], 'ic_launcher_round.png'))
             
-            os.makedirs(size["dirName"], exist_ok=True)
             resized_image.save(os.path.join(size["dirName"], iconName))
-            
-            if icon_type == 'launcher':
-                resized_image.save(os.path.join(size["dirName"], 'ic_launcher_round.png'))
-
+                
         logger.info("Done making icons.")
     except:
         logger.error("Failed to make icons!")
